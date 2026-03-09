@@ -113,6 +113,54 @@ export default {
             });
         }
 
+        // Contact form submission (no auth needed)
+        if (url.pathname === '/contact' && request.method === 'POST') {
+            try {
+                const formData = await request.formData();
+                const name = formData.get('name') || '';
+                const email = formData.get('email') || '';
+                const phone = formData.get('phone') || '';
+                const service = formData.get('service') || '';
+                const message = formData.get('message') || '';
+
+                const timestamp = Date.now();
+                const key = `contact/${timestamp}-${Math.random().toString(36).slice(2, 8)}.json`;
+
+                await env.PHOTOS.put(key, JSON.stringify({
+                    name, email, phone, service, message,
+                    submitted: new Date().toISOString()
+                }), {
+                    httpMetadata: { contentType: 'application/json' }
+                });
+
+                // Redirect back to site with success message
+                return Response.redirect('https://rapropertysolutions.net/#contact-success', 303);
+            } catch (e) {
+                return new Response('Something went wrong. Please email us at main@rapropertysolutions.net', {
+                    status: 500, headers: corsHeaders
+                });
+            }
+        }
+
+        // List contact messages (auth required)
+        if (url.pathname === '/messages') {
+            const list = await env.PHOTOS.list({ prefix: 'contact/', limit: 100 });
+            const messages = [];
+
+            for (const obj of list.objects) {
+                const data = await env.PHOTOS.get(obj.key);
+                const json = await data.json();
+                messages.push({ key: obj.key, ...json });
+            }
+
+            messages.sort((a, b) => new Date(b.submitted) - new Date(a.submitted));
+
+            return new Response(JSON.stringify({ messages }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // Delete message (uses same delete endpoint as photos)
         // Delete photo
         if (url.pathname.startsWith('/delete/') && request.method === 'DELETE') {
             const key = url.pathname.replace('/delete/', '');

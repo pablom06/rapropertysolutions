@@ -102,3 +102,14 @@ document.body.appendChild(lightbox);
 
 // Initial render
 renderGallery('all');
+
+// Show success message if redirected from contact form
+if (window.location.hash === '#contact-success') {
+    const successMsg = document.getElementById('contact-success');
+    const form = document.getElementById('contact-form');
+    if (successMsg && form) {
+        successMsg.style.display = 'block';
+        form.style.display = 'none';
+    }
+    history.replaceState(null, '', window.location.pathname + '#contact');
+}

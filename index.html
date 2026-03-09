@@ -179,7 +179,10 @@
                 <p><strong>Service Areas:</strong> Houston, TX | San Antonio, TX | Dallas, TX | Throughout Connecticut</p>
                 <p><strong>Available:</strong> Mon-Sat, 7AM - 6PM | On-Call 24/7</p>
             </div>
-            <form class="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <div id="contact-success" style="display:none; background:#d4edda; color:#155724; padding:1.5rem; border-radius:8px; text-align:center; font-size:1.1rem;">
+                <strong>Message sent!</strong> We'll get back to you as soon as possible.
+            </div>
+            <form class="contact-form" id="contact-form" action="https://ra-photos.rapropertysolutions.net/contact" method="POST">
                 <input type="text" name="name" placeholder="Your Name" required>
                 <input type="email" name="email" placeholder="Your Email" required>
                 <input type="tel" name="phone" placeholder="Your Phone">
