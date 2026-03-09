@@ -63,7 +63,7 @@
             <div id="upload-status" class="status"></div>
 
             <label for="category">Category</label>
-            <select id="category">
+            <select id="category" onchange="toggleCustomCategory()">
                 <option value="turns">Turns & Make-Readies</option>
                 <option value="rehab">Rehabs</option>
                 <option value="plumbing">Plumbing</option>
@@ -82,7 +82,9 @@
                 <option value="bathrooms">Bathrooms</option>
                 <option value="kitchens">Kitchens</option>
                 <option value="general">General</option>
+                <option value="__custom__">+ New Category...</option>
             </select>
+            <input type="text" id="customCategory" placeholder="Enter new category name" style="display:none">
 
             <label for="title">Project Title</label>
             <input type="text" id="title" placeholder="e.g. Kitchen remodel - Unit 4B">
@@ -113,6 +115,27 @@
     <script>
         const API_URL = 'https://ra-photos.rapropertysolutions.net';
         let authToken = '';
+
+        function toggleCustomCategory() {
+            const select = document.getElementById('category');
+            const custom = document.getElementById('customCategory');
+            if (select.value === '__custom__') {
+                custom.style.display = 'block';
+                custom.focus();
+            } else {
+                custom.style.display = 'none';
+                custom.value = '';
+            }
+        }
+
+        function getCategory() {
+            const select = document.getElementById('category');
+            if (select.value === '__custom__') {
+                const custom = document.getElementById('customCategory').value.trim();
+                return custom.toLowerCase().replace(/\s+/g, '-') || 'general';
+            }
+            return select.value;
+        }
 
         function login() {
             authToken = document.getElementById('password').value;
@@ -145,7 +168,7 @@
 
         async function uploadPhotos() {
             const files = document.getElementById('files').files;
-            const category = document.getElementById('category').value;
+            const category = getCategory();
             const title = document.getElementById('title').value || 'Untitled';
             const photoType = document.querySelector('input[name="photoType"]:checked').value;
             const btn = document.getElementById('uploadBtn');
