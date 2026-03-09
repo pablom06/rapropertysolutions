@@ -422,15 +422,13 @@ footer {
         padding: 0.5rem 1rem;
     }
 
-    .logo {
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
+    .logo-img {
+        display: none;
     }
 
-    .logo-img {
-        height: 40px;
-        max-width: 200px;
+    .logo-text {
+        display: inline;
+        font-size: 1.1rem;
     }
 
     .mobile-menu {
@@ -438,7 +436,9 @@ footer {
         flex-shrink: 0;
         font-size: 2rem;
         padding: 0.5rem;
-        z-index: 10;
+        background: var(--accent);
+        color: var(--dark);
+        border-radius: 4px;
     }
 
     .nav-links {
