@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Property Solutions</title>
+    <title>RA Property Solutions | Houston's One-Stop Property Services</title>
+    <meta name="description" content="Turns, make-readies, rehabs, and full maintenance services for SFR, multifamily, and apartment buildings in Houston. Over 50 years combined experience.">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -23,42 +24,92 @@
 
     <section id="home" class="hero">
         <div class="hero-content">
-            <h1>Quality Property Solutions You Can Trust</h1>
-            <p>Professional property services tailored to your needs.</p>
+            <h1>Houston's One-Stop Property Solution</h1>
+            <p>Turns, make-readies, rehabs, and full-service maintenance for investors, property managers, and homeowners. Nothing too small or too big.</p>
             <a href="#contact" class="btn">Get a Free Quote</a>
         </div>
     </section>
 
     <section id="services" class="services">
         <h2>Our Services</h2>
+        <p class="section-subtitle">A true one-stop shop — we handle every trade so you don't have to call multiple contractors.</p>
         <div class="services-grid">
             <div class="service-card">
-                <h3>Service 1</h3>
-                <p>Description of your service goes here.</p>
+                <h3>Turns & Make-Readies</h3>
+                <p>Fast, thorough unit turnovers to minimize vacancy and maximize your rental income. Full cleaning, painting, repairs, and upgrades.</p>
             </div>
             <div class="service-card">
-                <h3>Service 2</h3>
-                <p>Description of your service goes here.</p>
+                <h3>Rehabs & Renovations</h3>
+                <p>Complete property rehabs for single-family homes, multifamily units, and apartment buildings. Interior and exterior transformations.</p>
             </div>
             <div class="service-card">
-                <h3>Service 3</h3>
-                <p>Description of your service goes here.</p>
+                <h3>Maintenance Services</h3>
+                <p>Full-service maintenance division handling day-to-day repairs and preventive maintenance. Portal integration for property managers.</p>
+            </div>
+            <div class="service-card">
+                <h3>Plumbing</h3>
+                <p>Leak repairs, fixture installation, re-piping, water heater replacement, drain cleaning, and full plumbing system overhauls.</p>
+            </div>
+            <div class="service-card">
+                <h3>Electrical</h3>
+                <p>Panel upgrades, wiring, outlet and switch installation, lighting, ceiling fans, troubleshooting, and code compliance.</p>
+            </div>
+            <div class="service-card">
+                <h3>HVAC</h3>
+                <p>AC and heating repair, installation, maintenance, duct work, and system replacements to keep your properties comfortable year-round.</p>
+            </div>
+            <div class="service-card">
+                <h3>Foundation</h3>
+                <p>Foundation inspection, leveling, pier installation, and structural repairs to protect your investment long-term.</p>
+            </div>
+            <div class="service-card">
+                <h3>Pest Control</h3>
+                <p>Residential and commercial pest management including treatment, prevention, and ongoing monitoring programs.</p>
+            </div>
+            <div class="service-card">
+                <h3>General Construction</h3>
+                <p>Drywall, flooring, roofing, fencing, painting, carpentry, concrete work, and everything in between.</p>
             </div>
         </div>
     </section>
 
     <section id="work" class="work">
         <h2>Our Work</h2>
-        <p class="section-subtitle">Check out some of our completed projects.</p>
-        <div class="gallery">
-            <!-- Add your work photos here like this:
-            <div class="gallery-item">
-                <img src="images/work/project1.jpg" alt="Project description">
-                <div class="gallery-caption">Project Name</div>
+        <p class="section-subtitle">Before and after photos from our completed projects across all trades.</p>
+
+        <div class="gallery-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="turns">Turns & Make-Readies</button>
+            <button class="filter-btn" data-filter="rehab">Rehabs</button>
+            <button class="filter-btn" data-filter="plumbing">Plumbing</button>
+            <button class="filter-btn" data-filter="electrical">Electrical</button>
+            <button class="filter-btn" data-filter="hvac">HVAC</button>
+            <button class="filter-btn" data-filter="foundation">Foundation</button>
+            <button class="filter-btn" data-filter="general">General</button>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <!-- Photos load here from gallery-data.js -->
+        </div>
+        <div class="gallery-placeholder" id="gallery-placeholder">
+            <p>Project photos coming soon.</p>
+        </div>
+    </section>
+
+    <section id="clients" class="clients">
+        <h2>Who We Work With</h2>
+        <div class="clients-grid">
+            <div class="client-card">
+                <h3>Investors</h3>
+                <p>Maximize ROI on flips and rental properties with fast, quality rehab and renovation work.</p>
             </div>
-            -->
-            <div class="gallery-placeholder">
-                <p>Photos coming soon. Drop your images in the <strong>images/work/</strong> folder.</p>
+            <div class="client-card">
+                <h3>Property Managers</h3>
+                <p>Portal-integrated maintenance and turnover services. Quick response times and competitive rates.</p>
+            </div>
+            <div class="client-card">
+                <h3>Homeowners</h3>
+                <p>Reliable repairs and improvements from a team you can trust. No job is too small.</p>
             </div>
         </div>
     </section>
@@ -66,7 +117,18 @@
     <section id="about" class="about">
         <h2>About Us</h2>
         <div class="about-content">
-            <p>Tell your story here — who you are, your experience, and why customers should choose RA Property Solutions.</p>
+            <p class="about-highlight">Over 50 years of combined management experience.</p>
+            <div class="team">
+                <div class="team-member">
+                    <h3>Jay</h3>
+                    <p>Houston contractor for over 15 years with a proven track record in property services. Previously ran a division of commercial cleaning for a major corporation. Brings hands-on expertise and deep knowledge of the Houston market.</p>
+                </div>
+                <div class="team-member">
+                    <h3>Pablo</h3>
+                    <p>Electrical engineering degree with experience developing and managing major projects throughout the country. Combines technical expertise with project management skills to deliver quality results on time and on budget.</p>
+                </div>
+            </div>
+            <p>Together, we built RA Property Solutions to be the one contractor you need for every property challenge. Quick service, reasonable rates, and work you can count on.</p>
         </div>
     </section>
 
@@ -74,14 +136,27 @@
         <h2>Contact Us</h2>
         <div class="contact-content">
             <div class="contact-info">
-                <p><strong>Email:</strong> info@rapropertysolutions.net</p>
+                <p><strong>Email:</strong> main@rapropertysolutions.net</p>
                 <p><strong>Phone:</strong> (555) 123-4567</p>
-                <p><strong>Area:</strong> Your service area here</p>
+                <p><strong>Service Area:</strong> Houston, TX & Surrounding Areas</p>
+                <p><strong>Available:</strong> Mon-Sat, 7AM - 6PM</p>
             </div>
             <form class="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
                 <input type="text" name="name" placeholder="Your Name" required>
                 <input type="email" name="email" placeholder="Your Email" required>
                 <input type="tel" name="phone" placeholder="Your Phone">
+                <select name="service" required>
+                    <option value="" disabled selected>What do you need?</option>
+                    <option value="turn">Turn / Make-Ready</option>
+                    <option value="rehab">Rehab / Renovation</option>
+                    <option value="maintenance">Maintenance / Repair</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="hvac">HVAC</option>
+                    <option value="foundation">Foundation</option>
+                    <option value="pest">Pest Control</option>
+                    <option value="other">Other</option>
+                </select>
                 <textarea name="message" placeholder="Tell us about your project" rows="5" required></textarea>
                 <button type="submit" class="btn">Send Message</button>
             </form>
@@ -92,6 +167,7 @@
         <p>&copy; 2026 RA Property Solutions. All rights reserved.</p>
     </footer>
 
+    <script src="js/gallery-data.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
