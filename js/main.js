@@ -59,19 +59,11 @@ function renderGallery(filter) {
                             <img src="${item.after}" alt="After - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">
                         </div>
                     </div>
-                    <div class="gallery-caption">
-                        <strong>${item.title}</strong>
-                        <span>${item.description || ''}</span>
-                    </div>
                 </div>`;
         }
         return `
             <div class="gallery-item" data-category="${item.category}">
                 <img src="${item.image}" alt="${item.title}" loading="lazy" onclick="openLightbox(this.src)">
-                <div class="gallery-caption">
-                    <strong>${item.title}</strong>
-                    <span>${item.description || ''}</span>
-                </div>
             </div>`;
     }).join('');
 }
