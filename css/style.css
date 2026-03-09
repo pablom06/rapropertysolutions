@@ -418,14 +418,27 @@ footer {
 
 /* Mobile */
 @media (max-width: 768px) {
+    nav {
+        padding: 0.5rem 1rem;
+    }
+
+    .logo {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+
     .logo-img {
-        height: 45px;
+        height: 40px;
+        max-width: 200px;
     }
 
     .mobile-menu {
         display: block;
+        flex-shrink: 0;
         font-size: 2rem;
         padding: 0.5rem;
+        z-index: 10;
     }
 
     .nav-links {
@@ -447,6 +460,7 @@ footer {
     .nav-links a {
         font-size: 1.1rem;
         padding: 0.5rem 0;
+        display: block;
     }
 
     .hero-content h1 {
