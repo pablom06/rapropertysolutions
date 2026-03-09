@@ -1,6 +1,17 @@
 // Mobile menu toggle
-document.querySelector('.mobile-menu').addEventListener('click', () => {
-    document.querySelector('.nav-links').classList.toggle('active');
+const mobileMenuBtn = document.querySelector('.mobile-menu');
+const navLinks = document.querySelector('.nav-links');
+
+mobileMenuBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    navLinks.classList.toggle('active');
+});
+
+mobileMenuBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    navLinks.classList.toggle('active');
 });
 
 // Close mobile menu when a link is clicked

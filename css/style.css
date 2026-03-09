@@ -441,13 +441,13 @@ footer {
     }
 
     .mobile-menu {
-        display: flex;
+        display: flex !important;
         -webkit-appearance: none;
         appearance: none;
         flex-shrink: 0;
         padding: 10px;
-        background: var(--accent);
-        border: none;
+        background: var(--accent) !important;
+        border: none !important;
         border-radius: 4px;
         min-width: 44px;
         min-height: 44px;
