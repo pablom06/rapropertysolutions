@@ -110,10 +110,6 @@
                 <div id="recentPhotos"></div>
             </div>
 
-            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #ddd;">
-                <h3 style="margin-bottom: 1rem; color: #1a3a5c;">Contact Messages</h3>
-                <div id="contactMessages"><p style="color:#666">Loading...</p></div>
-            </div>
         </div>
     </div>
 
@@ -150,7 +146,6 @@
                         document.getElementById('login-section').style.display = 'none';
                         document.getElementById('upload-section').style.display = 'block';
                         loadRecent();
-                        loadMessages();
                         return;
                     }
                     throw new Error('Wrong password');
@@ -243,31 +238,6 @@
                 headers: { 'Authorization': authToken }
             });
             loadRecent();
-            loadMessages();
-        }
-
-        async function loadMessages() {
-            try {
-                const res = await fetch(API_URL + '/messages', { headers: { 'Authorization': authToken } });
-                const data = await res.json();
-                const container = document.getElementById('contactMessages');
-                if (data.messages.length === 0) {
-                    container.innerHTML = '<p style="color:#666">No messages yet.</p>';
-                    return;
-                }
-                container.innerHTML = data.messages.map(msg => `
-                    <div class="uploaded-item" style="flex-direction:column; align-items:flex-start; padding:1rem;">
-                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                            <strong style="color:#1a3a5c">${msg.name}</strong>
-                            <button class="delete-btn" onclick="deletePhoto('${msg.key}')">Delete</button>
-                        </div>
-                        <small style="color:#666">${msg.email} | ${msg.phone || 'No phone'} | ${msg.service} | ${new Date(msg.submitted).toLocaleString()}</small>
-                        <p style="margin-top:0.5rem">${msg.message}</p>
-                    </div>
-                `).join('');
-            } catch(e) {
-                document.getElementById('contactMessages').innerHTML = '<p style="color:#666">Could not load messages.</p>';
-            }
         }
     </script>
 </body>
