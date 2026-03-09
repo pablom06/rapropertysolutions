@@ -126,11 +126,36 @@ export default {
                 const timestamp = Date.now();
                 const key = `contact/${timestamp}-${Math.random().toString(36).slice(2, 8)}.json`;
 
+                // Save to R2 as backup
                 await env.PHOTOS.put(key, JSON.stringify({
                     name, email, phone, service, message,
                     submitted: new Date().toISOString()
                 }), {
                     httpMetadata: { contentType: 'application/json' }
+                });
+
+                // Send email via Resend
+                await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${env.RESEND_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from: 'RA Property Solutions <noreply@rapropertysolutions.net>',
+                        to: 'main@rapropertysolutions.net',
+                        reply_to: email,
+                        subject: `New Contact: ${service} - ${name}`,
+                        html: `<h2>New Contact Form Submission</h2>
+                            <p><strong>Name:</strong> ${name}</p>
+                            <p><strong>Email:</strong> ${email}</p>
+                            <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+                            <p><strong>Service:</strong> ${service}</p>
+                            <p><strong>Message:</strong></p>
+                            <p>${message}</p>
+                            <hr>
+                            <p style="color:#666;font-size:12px">Submitted from rapropertysolutions.net</p>`
+                    })
                 });
 
                 // Redirect back to site with success message
