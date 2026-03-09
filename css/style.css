@@ -76,9 +76,18 @@ nav {
     display: none;
     background: none;
     border: none;
-    color: var(--white);
-    font-size: 1.5rem;
     cursor: pointer;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+}
+
+.menu-bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: var(--white);
+    border-radius: 2px;
 }
 
 /* Hero */
@@ -432,19 +441,22 @@ footer {
     }
 
     .mobile-menu {
-        display: block;
+        display: flex;
         -webkit-appearance: none;
         appearance: none;
         flex-shrink: 0;
-        font-size: 2rem;
-        padding: 0.5rem 0.7rem;
+        padding: 10px;
         background: var(--accent);
-        color: var(--dark);
         border: none;
         border-radius: 4px;
-        line-height: 1;
         min-width: 44px;
         min-height: 44px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .menu-bar {
+        background: var(--dark);
     }
 
     .nav-links {
