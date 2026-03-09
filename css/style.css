@@ -40,6 +40,19 @@ nav {
     color: var(--white);
     font-size: 1.4rem;
     font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo-img {
+    height: 40px;
+    width: auto;
+}
+
+.logo-text {
+    display: none;
 }
 
 .nav-links {
