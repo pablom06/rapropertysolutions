@@ -57,6 +57,7 @@ export default {
             const photos = [];
 
             for (const obj of list.objects) {
+                if (obj.key.startsWith('contact/')) continue;
                 const head = await env.PHOTOS.head(obj.key);
                 photos.push({
                     key: obj.key,
@@ -80,6 +81,7 @@ export default {
             const photos = [];
 
             for (const obj of list.objects) {
+                if (obj.key.startsWith('contact/')) continue;
                 const head = await env.PHOTOS.head(obj.key);
                 photos.push({
                     key: obj.key,
