@@ -15,7 +15,7 @@ export default {
         }
 
         const auth = request.headers.get('Authorization');
-        const needsAuth = ['/upload', '/list', '/delete'];
+        const needsAuth = ['/upload', '/list', '/delete', '/update'];
 
         if (needsAuth.some(p => url.pathname.startsWith(p))) {
             if (auth !== env.UPLOAD_PASSWORD) {
@@ -187,7 +187,41 @@ export default {
             });
         }
 
-        // Delete message (uses same delete endpoint as photos)
+        // Update photo metadata (title, category, photoType)
+        if (url.pathname.startsWith('/update/') && request.method === 'PUT') {
+            try {
+                const key = url.pathname.replace('/update/', '');
+                const updates = await request.json();
+                const obj = await env.PHOTOS.head(key);
+                if (!obj) {
+                    return new Response('Not found', { status: 404, headers: corsHeaders });
+                }
+
+                const meta = obj.customMetadata || {};
+                const newMeta = {
+                    category: updates.category || meta.category || 'general',
+                    title: updates.title || meta.title || 'Untitled',
+                    photoType: updates.photoType || meta.photoType || 'single',
+                    uploaded: meta.uploaded || new Date().toISOString()
+                };
+
+                // R2 doesn't support updating metadata in place, so copy the object
+                const original = await env.PHOTOS.get(key);
+                await env.PHOTOS.put(key, original.body, {
+                    httpMetadata: obj.httpMetadata,
+                    customMetadata: newMeta
+                });
+
+                return new Response(JSON.stringify({ success: true }), {
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            } catch (e) {
+                return new Response(JSON.stringify({ error: e.message }), {
+                    status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+        }
+
         // Delete photo
         if (url.pathname.startsWith('/delete/') && request.method === 'DELETE') {
             const key = url.pathname.replace('/delete/', '');
