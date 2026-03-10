@@ -55,6 +55,16 @@
         .project-group-thumbs { display: flex; gap: 2px; background: #ddd; }
         .project-group-thumbs img { width: 80px; height: 60px; object-fit: cover; display: block; }
         .more-count { display: flex; align-items: center; justify-content: center; min-width: 50px; background: #1a3a5c; color: white; font-size: 0.8rem; font-weight: 600; }
+
+        .reorder-btn { background: #1a3a5c; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .reorder-photos { display: none; padding: 0.5rem; background: #eee; }
+        .reorder-photos.active { display: block; }
+        .reorder-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem; background: white; border-radius: 4px; margin-bottom: 0.3rem; }
+        .reorder-item img { width: 60px; height: 45px; object-fit: cover; border-radius: 3px; }
+        .reorder-item .reorder-info { flex: 1; font-size: 0.8rem; color: #666; }
+        .reorder-arrows { display: flex; flex-direction: column; gap: 2px; }
+        .reorder-arrows button { background: #ddd; border: none; padding: 0.2rem 0.5rem; cursor: pointer; border-radius: 3px; font-size: 0.7rem; }
+        .reorder-arrows button:hover { background: #ccc; }
     </style>
 </head>
 <body>
@@ -307,13 +317,28 @@
                     groups[key].photos.push(photo);
                 });
 
+                let groupIndex = 0;
                 container.innerHTML = Object.values(groups).map(group => {
+                    // Sort photos by order
+                    group.photos.sort((a, b) => (a.order || 0) - (b.order || 0));
                     const keys = group.photos.map(p => p.key);
                     const thumbs = group.photos.slice(0, 4).map(p =>
                         `<img src="${API_URL}/image/${p.key}" alt="${p.title}">`
                     ).join('');
                     const safeTitle = group.title.replace(/'/g, "\\'");
                     const safeKeys = encodeURIComponent(JSON.stringify(keys));
+                    const gid = 'reorder-' + groupIndex;
+                    const reorderItems = group.photos.map((p, i) =>
+                        `<div class="reorder-item">
+                            <img src="${API_URL}/image/${p.key}" alt="">
+                            <div class="reorder-info">${p.photoType || 'single'}</div>
+                            <div class="reorder-arrows">
+                                <button onclick="movePhoto('${safeKeys}', ${i}, -1)" ${i === 0 ? 'disabled' : ''}>&#9650;</button>
+                                <button onclick="movePhoto('${safeKeys}', ${i}, 1)" ${i === group.photos.length - 1 ? 'disabled' : ''}>&#9660;</button>
+                            </div>
+                        </div>`
+                    ).join('');
+                    groupIndex++;
                     return `
                         <div class="project-group">
                             <div class="project-group-header">
@@ -322,11 +347,13 @@
                                     <small>${group.category} &middot; ${group.photos.length} photo${group.photos.length !== 1 ? 's' : ''}</small>
                                 </div>
                                 <div class="btn-group">
+                                    <button class="reorder-btn" onclick="toggleReorder('${gid}')">Reorder</button>
                                     <button class="edit-btn" onclick="editGroup('${safeKeys}', '${safeTitle}')">Rename</button>
                                     <button class="delete-btn" onclick="deleteGroup('${safeKeys}', '${safeTitle}')">Delete All</button>
                                 </div>
                             </div>
                             <div class="project-group-thumbs">${thumbs}${group.photos.length > 4 ? '<span class="more-count">+' + (group.photos.length - 4) + '</span>' : ''}</div>
+                            <div class="reorder-photos" id="${gid}">${reorderItems}</div>
                         </div>`;
                 }).join('');
             } catch(e) {}
@@ -348,6 +375,34 @@
                 loadRecent();
             } catch(e) {
                 alert('Failed to rename. Make sure you deployed the latest worker.');
+            }
+        }
+
+        function toggleReorder(gid) {
+            document.getElementById(gid).classList.toggle('active');
+        }
+
+        async function movePhoto(encodedKeys, index, direction) {
+            const keys = JSON.parse(decodeURIComponent(encodedKeys));
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= keys.length) return;
+
+            // Swap the two photos' order values
+            try {
+                const res1 = await fetch(API_URL + '/update/' + keys[index], {
+                    method: 'PUT',
+                    headers: { 'Authorization': authToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order: newIndex })
+                });
+                const res2 = await fetch(API_URL + '/update/' + keys[newIndex], {
+                    method: 'PUT',
+                    headers: { 'Authorization': authToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order: index })
+                });
+                if (!res1.ok || !res2.ok) throw new Error('Update failed');
+                loadRecent();
+            } catch(e) {
+                alert('Failed to reorder. Make sure you deployed the latest worker.');
             }
         }
 
