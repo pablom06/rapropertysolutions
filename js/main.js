@@ -48,26 +48,22 @@ function renderGallery(filter) {
     gallery.innerHTML = items.map(item => {
         if (item.befores || item.afters) {
             const beforeImgs = (item.befores || []).map(src =>
-                `<div>
-                    <div class="label before">BEFORE</div>
-                    <img src="${src}" alt="Before - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">
-                </div>`
+                `<img src="${src}" alt="Before - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">`
             ).join('');
             const afterImgs = (item.afters || []).map(src =>
-                `<div>
-                    <div class="label after">AFTER</div>
-                    <img src="${src}" alt="After - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">
-                </div>`
+                `<img src="${src}" alt="After - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">`
             ).join('');
-            return `
-                <div class="gallery-item before-after-group" data-category="${item.category}">
-                    <div class="before-after-section">
-                        ${beforeImgs}
-                    </div>
-                    <div class="before-after-section">
-                        ${afterImgs}
-                    </div>
-                </div>`;
+            let html = '<div class="gallery-item ba-group" data-category="' + item.category + '">';
+            if (item.befores && item.befores.length > 0) {
+                html += '<div class="ba-label before">BEFORE</div>';
+                html += '<div class="ba-photos">' + beforeImgs + '</div>';
+            }
+            if (item.afters && item.afters.length > 0) {
+                html += '<div class="ba-label after">AFTER</div>';
+                html += '<div class="ba-photos">' + afterImgs + '</div>';
+            }
+            html += '</div>';
+            return html;
         }
         return `
             <div class="gallery-item" data-category="${item.category}">
