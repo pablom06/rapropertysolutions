@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Gallery - RA Property Solutions</title>
+    <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/style.css?v=5">
+    <style>
+        .gallery-page-header {
+            background: var(--primary);
+            padding: 6rem 2rem 2rem;
+            text-align: center;
+        }
+        .gallery-page-header h1 {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .gallery-page-header p {
+            color: #ccc;
+        }
+        .gallery-page-header .back-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        .gallery-page-body {
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body class="gallery-page">
+    <header>
+        <nav>
+            <a href="index.html" class="logo"><img src="images/logo.svg" alt="RA Property Solutions" class="logo-img"></a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#work">Our Work</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+            </ul>
+            <button class="mobile-menu" aria-label="Menu">
+                <span class="menu-bar"></span>
+                <span class="menu-bar"></span>
+                <span class="menu-bar"></span>
+            </button>
+        </nav>
+    </header>
+
+    <div class="gallery-page-header">
+        <h1>Project Gallery</h1>
+        <p>Browse all our completed projects.</p>
+        <a href="index.html" class="back-link">&larr; Back to Home</a>
+    </div>
+
+    <div class="gallery-page-body">
+        <div class="gallery-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+        </div>
+
+        <div class="gallery" id="gallery"></div>
+        <div class="gallery-placeholder" id="gallery-placeholder">
+            <p>Project photos coming soon.</p>
+        </div>
+    </div>
+
+    <!-- Project photo modal -->
+    <div class="project-modal" id="project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2></h2>
+                <button class="close-btn" onclick="closeProjectModal()">&times;</button>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 RA Property Solutions. All rights reserved.</p>
+    </footer>
+
+    <script src="js/gallery-data.js?v=8"></script>
+    <script src="js/main.js?v=8"></script>
+</body>
+</html>

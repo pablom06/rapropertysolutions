@@ -1,7 +1,6 @@
 // Gallery loads photos from the upload API
 const PHOTOS_API = 'https://ra-photos.rapropertysolutions.net';
 
-// Known category labels (custom ones get auto-formatted)
 const CATEGORY_LABELS = {
     'turns': 'Turns & Make-Readies',
     'rehab': 'Rehabs',
@@ -20,46 +19,17 @@ const CATEGORY_LABELS = {
     'underground-plumbing': 'Underground Plumbing',
     'bathrooms': 'Bathrooms',
     'kitchens': 'Kitchens',
-    'general': 'General'
+    'general': 'General',
+    'drywall': 'Drywall'
 };
 
 function getCategoryLabel(cat) {
     if (CATEGORY_LABELS[cat]) return CATEGORY_LABELS[cat];
-    // Auto-format: "my-new-category" -> "My New Category"
     return cat.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-// Build filter buttons dynamically from photo categories
-function buildFilterButtons(photos) {
-    const filtersContainer = document.querySelector('.gallery-filters');
-    if (!filtersContainer) return;
-
-    // Get unique categories from photos
-    const categories = [...new Set(photos.map(p => p.category))];
-
-    // Start with "All" button
-    let html = '<button class="filter-btn active" data-filter="all">All</button>';
-
-    // Add buttons for each category that has photos
-    categories.sort((a, b) => getCategoryLabel(a).localeCompare(getCategoryLabel(b)));
-    categories.forEach(cat => {
-        html += `<button class="filter-btn" data-filter="${cat}">${getCategoryLabel(cat)}</button>`;
-    });
-
-    filtersContainer.innerHTML = html;
-
-    // Re-attach click handlers
-    filtersContainer.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            filtersContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderGallery(btn.dataset.filter);
-        });
-    });
-}
-
-// Group photos by title for before/after pairing
-function buildGallery(photos) {
+// Build projects grouped by title + category
+function buildProjects(photos) {
     const grouped = {};
 
     photos.forEach(photo => {
@@ -71,51 +41,58 @@ function buildGallery(photos) {
     });
 
     return Object.values(grouped).map(group => {
-        const befores = group.photos.filter(p => p.photoType === 'before');
-        const afters = group.photos.filter(p => p.photoType === 'after');
-        const singles = group.photos.filter(p => p.photoType === 'single');
+        const befores = group.photos.filter(p => p.photoType === 'before').map(p => PHOTOS_API + '/image/' + p.key);
+        const afters = group.photos.filter(p => p.photoType === 'after').map(p => PHOTOS_API + '/image/' + p.key);
+        const singles = group.photos.filter(p => p.photoType === 'single').map(p => PHOTOS_API + '/image/' + p.key);
 
-        const items = [];
+        // Pick a cover photo: first after, then first single, then first before
+        const cover = afters[0] || singles[0] || befores[0];
+        const totalPhotos = befores.length + afters.length + singles.length;
 
-        // Pair befores and afters 1:1
-        const pairs = Math.min(befores.length, afters.length);
-        for (let i = 0; i < pairs; i++) {
-            items.push({
-                category: group.category,
-                title: group.title,
-                before: PHOTOS_API + '/image/' + befores[i].key,
-                after: PHOTOS_API + '/image/' + afters[i].key
-            });
-        }
-        // Leftover befores/afters as regular photos
-        for (let i = pairs; i < befores.length; i++) {
-            items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + befores[i].key });
-        }
-        for (let i = pairs; i < afters.length; i++) {
-            items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + afters[i].key });
-        }
-
-        singles.forEach(photo => {
-            items.push({
-                category: group.category,
-                title: group.title,
-                image: PHOTOS_API + '/image/' + photo.key
-            });
-        });
-
-        return items;
-    }).flat();
+        return {
+            title: group.title,
+            category: group.category,
+            categoryLabel: getCategoryLabel(group.category),
+            cover: cover,
+            totalPhotos: totalPhotos,
+            befores: befores,
+            afters: afters,
+            singles: singles
+        };
+    });
 }
 
-// Fallback data if API is unreachable
-let galleryData = [];
+// Build filter buttons from project categories
+function buildFilterButtons(projects) {
+    const filtersContainer = document.querySelector('.gallery-filters');
+    if (!filtersContainer) return;
 
-// Load gallery from API
+    const categories = [...new Set(projects.map(p => p.category))];
+    let html = '<button class="filter-btn active" data-filter="all">All</button>';
+    categories.sort((a, b) => getCategoryLabel(a).localeCompare(getCategoryLabel(b)));
+    categories.forEach(cat => {
+        html += `<button class="filter-btn" data-filter="${cat}">${getCategoryLabel(cat)}</button>`;
+    });
+
+    filtersContainer.innerHTML = html;
+
+    filtersContainer.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            filtersContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderGallery(btn.dataset.filter);
+        });
+    });
+}
+
+let projectsData = [];
+
+// Load from API
 fetch(PHOTOS_API + '/gallery')
     .then(r => r.json())
     .then(data => {
-        galleryData = buildGallery(data.photos);
-        buildFilterButtons(data.photos);
+        projectsData = buildProjects(data.photos);
+        buildFilterButtons(projectsData);
         renderGallery('all');
     })
     .catch(() => {
