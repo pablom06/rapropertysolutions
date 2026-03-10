@@ -45,6 +45,8 @@
         .uploaded-item .info { flex: 1; }
         .uploaded-item .info small { color: #666; }
         .delete-btn { background: #e74c3c; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .edit-btn { background: #1a3a5c; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .uploaded-item .btn-group { display: flex; flex-direction: column; gap: 0.3rem; }
     </style>
 </head>
 <body>
@@ -292,10 +294,32 @@
                             <strong>${photo.title}</strong><br>
                             <small>${photo.category} | ${photo.photoType} | ${new Date(photo.uploaded).toLocaleDateString()}</small>
                         </div>
-                        <button class="delete-btn" onclick="deletePhoto('${photo.key}')">Delete</button>
+                        <div class="btn-group">
+                            <button class="edit-btn" onclick="editPhoto('${photo.key}', '${photo.title.replace(/'/g, "\\'")}')">Edit</button>
+                            <button class="delete-btn" onclick="deletePhoto('${photo.key}')">Delete</button>
+                        </div>
                     </div>
                 `).join('');
             } catch(e) {}
+        }
+
+        async function editPhoto(key, currentTitle) {
+            const newTitle = prompt('Edit project title:', currentTitle);
+            if (newTitle === null || newTitle.trim() === '') return;
+            try {
+                const res = await fetch(API_URL + '/update/' + key, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': authToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: newTitle.trim() })
+                });
+                if (!res.ok) throw new Error('Update failed');
+                loadRecent();
+            } catch(e) {
+                alert('Failed to update title. Try again.');
+            }
         }
 
         async function deletePhoto(key) {
