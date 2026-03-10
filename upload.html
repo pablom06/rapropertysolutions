@@ -91,17 +91,33 @@
 
             <label>Photo Type</label>
             <div class="photo-type-row">
-                <label><input type="radio" name="photoType" value="single" checked> Single Photo</label>
-                <label><input type="radio" name="photoType" value="before"> Before Photo</label>
-                <label><input type="radio" name="photoType" value="after"> After Photo</label>
+                <label><input type="radio" name="photoType" value="single" checked onchange="togglePhotoType()"> Single Photo</label>
+                <label><input type="radio" name="photoType" value="beforeafter" onchange="togglePhotoType()"> Before & After</label>
             </div>
 
-            <div class="file-input-wrapper" onclick="document.getElementById('files').click()">
-                <input type="file" id="files" accept="image/*" multiple>
-                <p>Tap to select photos or take a picture</p>
+            <div id="single-upload">
+                <div class="file-input-wrapper" onclick="document.getElementById('files').click()">
+                    <input type="file" id="files" accept="image/*" multiple>
+                    <p>Tap to select photos or take a picture</p>
+                </div>
+                <div class="preview-grid" id="preview"></div>
             </div>
 
-            <div class="preview-grid" id="preview"></div>
+            <div id="beforeafter-upload" style="display:none">
+                <label style="color:#e74c3c">Before Photo</label>
+                <div class="file-input-wrapper" onclick="document.getElementById('beforeFiles').click()">
+                    <input type="file" id="beforeFiles" accept="image/*" multiple>
+                    <p>Tap to select BEFORE photos</p>
+                </div>
+                <div class="preview-grid" id="beforePreview"></div>
+
+                <label style="color:#27ae60">After Photo</label>
+                <div class="file-input-wrapper" onclick="document.getElementById('afterFiles').click()">
+                    <input type="file" id="afterFiles" accept="image/*" multiple>
+                    <p>Tap to select AFTER photos</p>
+                </div>
+                <div class="preview-grid" id="afterPreview"></div>
+            </div>
 
             <button class="btn" id="uploadBtn" onclick="uploadPhotos()" disabled>Upload Photos</button>
 
@@ -156,51 +172,97 @@
                 });
         }
 
-        document.getElementById('files').addEventListener('change', function() {
-            const preview = document.getElementById('preview');
-            preview.innerHTML = '';
-            document.getElementById('uploadBtn').disabled = this.files.length === 0;
-            Array.from(this.files).forEach(file => {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                preview.appendChild(img);
+        function togglePhotoType() {
+            const type = document.querySelector('input[name="photoType"]:checked').value;
+            document.getElementById('single-upload').style.display = type === 'single' ? 'block' : 'none';
+            document.getElementById('beforeafter-upload').style.display = type === 'beforeafter' ? 'block' : 'none';
+            updateUploadBtn();
+        }
+
+        function updateUploadBtn() {
+            const type = document.querySelector('input[name="photoType"]:checked').value;
+            if (type === 'single') {
+                document.getElementById('uploadBtn').disabled = document.getElementById('files').files.length === 0;
+            } else {
+                const hasBefore = document.getElementById('beforeFiles').files.length > 0;
+                const hasAfter = document.getElementById('afterFiles').files.length > 0;
+                document.getElementById('uploadBtn').disabled = !(hasBefore && hasAfter);
+            }
+        }
+
+        function setupPreview(inputId, previewId) {
+            document.getElementById(inputId).addEventListener('change', function() {
+                const preview = document.getElementById(previewId);
+                preview.innerHTML = '';
+                Array.from(this.files).forEach(file => {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    preview.appendChild(img);
+                });
+                updateUploadBtn();
             });
-        });
+        }
+
+        setupPreview('files', 'preview');
+        setupPreview('beforeFiles', 'beforePreview');
+        setupPreview('afterFiles', 'afterPreview');
+
+        async function uploadFile(file, category, title, photoType) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('category', category);
+            formData.append('title', title);
+            formData.append('photoType', photoType);
+
+            const res = await fetch(API_URL + '/upload', {
+                method: 'POST',
+                headers: { 'Authorization': authToken },
+                body: formData
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+        }
 
         async function uploadPhotos() {
-            const files = document.getElementById('files').files;
             const category = getCategory();
             const title = document.getElementById('title').value || 'Untitled';
-            const photoType = document.querySelector('input[name="photoType"]:checked').value;
+            const type = document.querySelector('input[name="photoType"]:checked').value;
             const btn = document.getElementById('uploadBtn');
             const status = document.getElementById('upload-status');
 
             btn.disabled = true;
             btn.textContent = 'Uploading...';
-            status.className = 'status info';
-            status.textContent = `Uploading ${files.length} photo(s)...`;
 
             try {
-                for (const file of files) {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('category', category);
-                    formData.append('title', title);
-                    formData.append('photoType', photoType);
-
-                    const res = await fetch(API_URL + '/upload', {
-                        method: 'POST',
-                        headers: { 'Authorization': authToken },
-                        body: formData
-                    });
-
-                    if (!res.ok) throw new Error('Upload failed');
+                if (type === 'single') {
+                    const files = document.getElementById('files').files;
+                    status.className = 'status info';
+                    status.textContent = `Uploading ${files.length} photo(s)...`;
+                    for (const file of files) {
+                        await uploadFile(file, category, title, 'single');
+                    }
+                } else {
+                    const beforeFiles = document.getElementById('beforeFiles').files;
+                    const afterFiles = document.getElementById('afterFiles').files;
+                    const total = beforeFiles.length + afterFiles.length;
+                    status.className = 'status info';
+                    status.textContent = `Uploading ${total} photo(s)...`;
+                    for (const file of beforeFiles) {
+                        await uploadFile(file, category, title, 'before');
+                    }
+                    for (const file of afterFiles) {
+                        await uploadFile(file, category, title, 'after');
+                    }
                 }
 
                 status.className = 'status success';
-                status.textContent = `${files.length} photo(s) uploaded successfully!`;
+                status.textContent = 'Photos uploaded successfully!';
                 document.getElementById('files').value = '';
+                document.getElementById('beforeFiles').value = '';
+                document.getElementById('afterFiles').value = '';
                 document.getElementById('preview').innerHTML = '';
+                document.getElementById('beforePreview').innerHTML = '';
+                document.getElementById('afterPreview').innerHTML = '';
                 document.getElementById('title').value = '';
                 btn.textContent = 'Upload Photos';
                 btn.disabled = true;
