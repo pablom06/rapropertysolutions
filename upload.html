@@ -86,8 +86,8 @@
             </select>
             <input type="text" id="customCategory" placeholder="Enter new category name" style="display:none">
 
-            <label for="title">Project Title</label>
-            <input type="text" id="title" placeholder="e.g. Kitchen remodel - Unit 4B">
+            <label for="title">Project Title <span style="color:#e74c3c">*</span></label>
+            <input type="text" id="title" placeholder="e.g. Replaced Evap Coil" required>
 
             <label>Photo Type</label>
             <div class="photo-type-row">
@@ -225,7 +225,12 @@
 
         async function uploadPhotos() {
             const category = getCategory();
-            const title = document.getElementById('title').value || 'Untitled';
+            const title = document.getElementById('title').value.trim();
+            if (!title) {
+                document.getElementById('upload-status').className = 'status error';
+                document.getElementById('upload-status').textContent = 'Please enter a project title.';
+                return;
+            }
             const type = document.querySelector('input[name="photoType"]:checked').value;
             const btn = document.getElementById('uploadBtn');
             const status = document.getElementById('upload-status');

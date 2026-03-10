@@ -6,7 +6,7 @@
     <title>RA Property Solutions | Your One-Stop Property Services</title>
     <meta name="description" content="Turns, make-readies, rehabs, and full maintenance services for SFR, multifamily, and apartment buildings. Serving Houston, San Antonio, Dallas, and Connecticut. Over 50 years combined experience.">
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="css/style.css?v=4">
+    <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
     <header>
@@ -126,13 +126,25 @@
             <button class="filter-btn active" data-filter="all">All</button>
         </div>
 
-        <div class="gallery" id="gallery">
-            <!-- Photos load here from gallery-data.js -->
-        </div>
+        <div class="gallery" id="gallery"></div>
         <div class="gallery-placeholder" id="gallery-placeholder">
             <p>Project photos coming soon.</p>
         </div>
+        <div class="view-more-wrap" id="view-more-wrap" style="display:none">
+            <a href="gallery.html" class="view-more-btn">View All Projects</a>
+        </div>
     </section>
+
+    <!-- Project photo modal -->
+    <div class="project-modal" id="project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2></h2>
+                <button class="close-btn" onclick="closeProjectModal()">&times;</button>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
 
     <section id="clients" class="clients">
         <h2>Who We Work With</h2>
@@ -208,7 +220,7 @@
         <p>&copy; 2026 RA Property Solutions. All rights reserved.</p>
     </footer>
 
-    <script src="js/gallery-data.js?v=7"></script>
-    <script src="js/main.js?v=7"></script>
+    <script src="js/gallery-data.js?v=8"></script>
+    <script src="js/main.js?v=8"></script>
 </body>
 </html>
