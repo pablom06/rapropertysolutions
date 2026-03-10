@@ -145,6 +145,31 @@ lightbox.innerHTML = '<img src="" alt="Full size">';
 lightbox.addEventListener('click', () => lightbox.classList.remove('active'));
 document.body.appendChild(lightbox);
 
+// Scroll animations
+const scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.fade-in, .fade-in-left, .fade-in-right').forEach(el => {
+    scrollObserver.observe(el);
+});
+
+// Header shrink on scroll
+const header = document.querySelector('header');
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+        header.style.padding = '0';
+        header.style.boxShadow = '0 2px 30px rgba(0,0,0,0.4)';
+    } else {
+        header.style.padding = '';
+        header.style.boxShadow = '';
+    }
+});
+
 // Initial render
 renderGallery('all');
 

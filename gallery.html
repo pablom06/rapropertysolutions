@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Gallery - RA Property Solutions</title>
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="css/style.css?v=5">
+    <link rel="stylesheet" href="css/style.css?v=6">
     <style>
         .gallery-page-header {
-            background: var(--primary);
-            padding: 6rem 2rem 2rem;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+            padding: 6rem 2rem 2.5rem;
             text-align: center;
         }
         .gallery-page-header h1 {
             color: white;
-            font-size: 2rem;
+            font-size: 2.2rem;
             margin-bottom: 0.5rem;
         }
         .gallery-page-header p {
-            color: #ccc;
+            color: rgba(255,255,255,0.7);
         }
         .gallery-page-header .back-link {
             color: var(--accent);
@@ -26,6 +26,11 @@
             font-weight: 600;
             display: inline-block;
             margin-top: 1rem;
+            transition: all 0.3s;
+        }
+        .gallery-page-header .back-link:hover {
+            color: var(--accent-glow);
+            transform: translateX(-3px);
         }
         .gallery-page-body {
             padding: 2rem;
@@ -79,10 +84,10 @@
     </div>
 
     <footer>
-        <p>&copy; 2025 RA Property Solutions. All rights reserved.</p>
+        <p>&copy; 2026 RA Property Solutions. All rights reserved.</p>
     </footer>
 
     <script src="js/gallery-data.js?v=9"></script>
-    <script src="js/main.js?v=8"></script>
+    <script src="js/main.js?v=9"></script>
 </body>
 </html>
