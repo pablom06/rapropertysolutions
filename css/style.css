@@ -239,15 +239,11 @@ section h2 {
     display: block;
 }
 
-.ba-group {
-    grid-column: 1 / -1;
-}
-
 .ba-label {
     text-align: center;
-    padding: 0.4rem;
+    padding: 0.3rem;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     letter-spacing: 0.05em;
 }
 
@@ -263,12 +259,12 @@ section h2 {
 
 .ba-photos {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
 
 .ba-photos img {
     width: 100%;
-    height: 200px;
+    height: 150px;
     object-fit: cover;
     display: block;
 }
