@@ -46,24 +46,24 @@ function renderGallery(filter) {
 
     placeholder.style.display = 'none';
     gallery.innerHTML = items.map(item => {
-        if (item.befores || item.afters) {
-            const beforeImgs = (item.befores || []).map(src =>
-                `<img src="${src}" alt="Before - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">`
+        if (item.befores && item.afters) {
+            const beforeImgs = item.befores.map(src =>
+                `<img src="${src}" alt="Before" loading="lazy" onclick="openLightbox(this.src)">`
             ).join('');
-            const afterImgs = (item.afters || []).map(src =>
-                `<img src="${src}" alt="After - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">`
+            const afterImgs = item.afters.map(src =>
+                `<img src="${src}" alt="After" loading="lazy" onclick="openLightbox(this.src)">`
             ).join('');
-            let html = '<div class="gallery-item ba-group" data-category="' + item.category + '">';
-            if (item.befores && item.befores.length > 0) {
-                html += '<div class="ba-label before">BEFORE</div>';
-                html += '<div class="ba-photos">' + beforeImgs + '</div>';
-            }
-            if (item.afters && item.afters.length > 0) {
-                html += '<div class="ba-label after">AFTER</div>';
-                html += '<div class="ba-photos">' + afterImgs + '</div>';
-            }
-            html += '</div>';
-            return html;
+            return `
+                <div class="ba-group" data-category="${item.category}">
+                    <div class="ba-side">
+                        <div class="ba-label before">BEFORE</div>
+                        <div class="ba-imgs">${beforeImgs}</div>
+                    </div>
+                    <div class="ba-side">
+                        <div class="ba-label after">AFTER</div>
+                        <div class="ba-imgs">${afterImgs}</div>
+                    </div>
+                </div>`;
         }
         return `
             <div class="gallery-item" data-category="${item.category}">
