@@ -6,7 +6,7 @@ export default {
         const url = new URL(request.url);
         const corsHeaders = {
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         };
 
@@ -38,7 +38,7 @@ export default {
 
                 await env.PHOTOS.put(key, file.stream(), {
                     httpMetadata: { contentType: file.type },
-                    customMetadata: { category, title, photoType, uploaded: new Date().toISOString() }
+                    customMetadata: { category, title, photoType, uploaded: new Date().toISOString(), order: '0' }
                 });
 
                 return new Response(JSON.stringify({ success: true, key }), {
@@ -64,7 +64,8 @@ export default {
                     category: head.customMetadata?.category || 'general',
                     title: head.customMetadata?.title || 'Untitled',
                     photoType: head.customMetadata?.photoType || 'single',
-                    uploaded: head.customMetadata?.uploaded || obj.uploaded
+                    uploaded: head.customMetadata?.uploaded || obj.uploaded,
+                    order: parseInt(head.customMetadata?.order || '0', 10)
                 });
             }
 
@@ -88,7 +89,8 @@ export default {
                     category: head.customMetadata?.category || 'general',
                     title: head.customMetadata?.title || 'Untitled',
                     photoType: head.customMetadata?.photoType || 'single',
-                    uploaded: head.customMetadata?.uploaded || obj.uploaded
+                    uploaded: head.customMetadata?.uploaded || obj.uploaded,
+                    order: parseInt(head.customMetadata?.order || '0', 10)
                 });
             }
 
@@ -202,7 +204,8 @@ export default {
                     category: updates.category || meta.category || 'general',
                     title: updates.title || meta.title || 'Untitled',
                     photoType: updates.photoType || meta.photoType || 'single',
-                    uploaded: meta.uploaded || new Date().toISOString()
+                    uploaded: meta.uploaded || new Date().toISOString(),
+                    order: updates.order !== undefined ? String(updates.order) : (meta.order || '0')
                 };
 
                 // R2 doesn't support updating metadata in place, so copy the object

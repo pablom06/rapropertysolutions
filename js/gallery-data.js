@@ -41,6 +41,9 @@ function buildProjects(photos) {
     });
 
     return Object.values(grouped).map(group => {
+        // Sort photos by order within each group
+        group.photos.sort((a, b) => (a.order || 0) - (b.order || 0));
+
         const befores = group.photos.filter(p => p.photoType === 'before').map(p => PHOTOS_API + '/image/' + p.key);
         const afters = group.photos.filter(p => p.photoType === 'after').map(p => PHOTOS_API + '/image/' + p.key);
         const singles = group.photos.filter(p => p.photoType === 'single').map(p => PHOTOS_API + '/image/' + p.key);
