@@ -77,13 +77,21 @@ function buildGallery(photos) {
 
         const items = [];
 
-        // Group all befores and afters into one combined box
-        if (befores.length > 0 || afters.length > 0) {
+        // Only group into before/after box when both exist
+        if (befores.length > 0 && afters.length > 0) {
             items.push({
                 category: group.category,
                 title: group.title,
                 befores: befores.map(p => PHOTOS_API + '/image/' + p.key),
                 afters: afters.map(p => PHOTOS_API + '/image/' + p.key)
+            });
+        } else {
+            // Show orphan befores/afters as regular photos
+            befores.forEach(p => {
+                items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + p.key });
+            });
+            afters.forEach(p => {
+                items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + p.key });
             });
         }
 
