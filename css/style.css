@@ -230,6 +230,7 @@ section h2 {
     border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    background: #fff;
 }
 
 .gallery-item img {
@@ -239,59 +240,30 @@ section h2 {
     display: block;
 }
 
-/* Before/After group: spans 2 columns, split left/right */
-.ba-group {
-    grid-column: span 2;
+.gallery-item .before-after {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.ba-side {
-    display: flex;
-    flex-direction: column;
+.gallery-item .before-after img {
+    height: 220px;
 }
 
-.ba-side .ba-label {
+.gallery-item .before-after .label {
     text-align: center;
     padding: 0.3rem;
     font-weight: 700;
     font-size: 0.8rem;
-    letter-spacing: 0.05em;
 }
 
-.ba-label.before {
+.gallery-item .before-after .label.before {
     background: #e74c3c;
     color: white;
 }
 
-.ba-label.after {
+.gallery-item .before-after .label.after {
     background: #27ae60;
     color: white;
-}
-
-.ba-side img {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    display: block;
-}
-
-/* If multiple photos per side, grid them */
-.ba-imgs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    flex: 1;
-}
-
-.ba-imgs img {
-    width: 100%;
-    height: 100%;
-    min-height: 180px;
-    object-fit: cover;
-    display: block;
 }
 
 @media (max-width: 768px) {
@@ -299,9 +271,9 @@ section h2 {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.4rem;
     }
-    .gallery-item img, .ba-imgs img {
+    .gallery-item img,
+    .gallery-item .before-after img {
         height: 160px;
-        min-height: 160px;
     }
 }
 

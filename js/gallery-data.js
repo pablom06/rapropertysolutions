@@ -77,22 +77,22 @@ function buildGallery(photos) {
 
         const items = [];
 
-        // Only group into before/after box when both exist
-        if (befores.length > 0 && afters.length > 0) {
+        // Pair befores and afters 1:1
+        const pairs = Math.min(befores.length, afters.length);
+        for (let i = 0; i < pairs; i++) {
             items.push({
                 category: group.category,
                 title: group.title,
-                befores: befores.map(p => PHOTOS_API + '/image/' + p.key),
-                afters: afters.map(p => PHOTOS_API + '/image/' + p.key)
+                before: PHOTOS_API + '/image/' + befores[i].key,
+                after: PHOTOS_API + '/image/' + afters[i].key
             });
-        } else {
-            // Show orphan befores/afters as regular photos
-            befores.forEach(p => {
-                items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + p.key });
-            });
-            afters.forEach(p => {
-                items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + p.key });
-            });
+        }
+        // Leftover befores/afters as regular photos
+        for (let i = pairs; i < befores.length; i++) {
+            items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + befores[i].key });
+        }
+        for (let i = pairs; i < afters.length; i++) {
+            items.push({ category: group.category, title: group.title, image: PHOTOS_API + '/image/' + afters[i].key });
         }
 
         singles.forEach(photo => {
