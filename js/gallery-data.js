@@ -71,34 +71,37 @@ function buildGallery(photos) {
     });
 
     return Object.values(grouped).map(group => {
-        const before = group.photos.find(p => p.photoType === 'before');
-        const after = group.photos.find(p => p.photoType === 'after');
+        const befores = group.photos.filter(p => p.photoType === 'before');
+        const afters = group.photos.filter(p => p.photoType === 'after');
         const singles = group.photos.filter(p => p.photoType === 'single');
 
         const items = [];
 
-        if (before && after) {
+        // Pair up before/after photos in order
+        const pairCount = Math.min(befores.length, afters.length);
+        for (let i = 0; i < pairCount; i++) {
             items.push({
                 category: group.category,
                 title: group.title,
-                before: PHOTOS_API + '/image/' + before.key,
-                after: PHOTOS_API + '/image/' + after.key
+                before: PHOTOS_API + '/image/' + befores[i].key,
+                after: PHOTOS_API + '/image/' + afters[i].key
             });
-        } else {
-            if (before) {
-                items.push({
-                    category: group.category,
-                    title: group.title + ' (Before)',
-                    image: PHOTOS_API + '/image/' + before.key
-                });
-            }
-            if (after) {
-                items.push({
-                    category: group.category,
-                    title: group.title + ' (After)',
-                    image: PHOTOS_API + '/image/' + after.key
-                });
-            }
+        }
+
+        // Show any unpaired before/after photos as singles
+        for (let i = pairCount; i < befores.length; i++) {
+            items.push({
+                category: group.category,
+                title: group.title,
+                image: PHOTOS_API + '/image/' + befores[i].key
+            });
+        }
+        for (let i = pairCount; i < afters.length; i++) {
+            items.push({
+                category: group.category,
+                title: group.title,
+                image: PHOTOS_API + '/image/' + afters[i].key
+            });
         }
 
         singles.forEach(photo => {
