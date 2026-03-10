@@ -46,18 +46,26 @@ function renderGallery(filter) {
 
     placeholder.style.display = 'none';
     gallery.innerHTML = items.map(item => {
-        if (item.before && item.after) {
+        if (item.befores || item.afters) {
+            const beforeImgs = (item.befores || []).map(src =>
+                `<div>
+                    <div class="label before">BEFORE</div>
+                    <img src="${src}" alt="Before - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">
+                </div>`
+            ).join('');
+            const afterImgs = (item.afters || []).map(src =>
+                `<div>
+                    <div class="label after">AFTER</div>
+                    <img src="${src}" alt="After - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">
+                </div>`
+            ).join('');
             return `
-                <div class="gallery-item" data-category="${item.category}">
-                    <div class="before-after">
-                        <div>
-                            <div class="label before">BEFORE</div>
-                            <img src="${item.before}" alt="Before - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">
-                        </div>
-                        <div>
-                            <div class="label after">AFTER</div>
-                            <img src="${item.after}" alt="After - ${item.title}" loading="lazy" onclick="openLightbox(this.src)">
-                        </div>
+                <div class="gallery-item before-after-group" data-category="${item.category}">
+                    <div class="before-after-section">
+                        ${beforeImgs}
+                    </div>
+                    <div class="before-after-section">
+                        ${afterImgs}
                     </div>
                 </div>`;
         }

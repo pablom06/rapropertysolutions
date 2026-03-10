@@ -77,30 +77,13 @@ function buildGallery(photos) {
 
         const items = [];
 
-        // Pair up before/after photos in order
-        const pairCount = Math.min(befores.length, afters.length);
-        for (let i = 0; i < pairCount; i++) {
+        // Group all befores and afters into one combined box
+        if (befores.length > 0 || afters.length > 0) {
             items.push({
                 category: group.category,
                 title: group.title,
-                before: PHOTOS_API + '/image/' + befores[i].key,
-                after: PHOTOS_API + '/image/' + afters[i].key
-            });
-        }
-
-        // Show any unpaired before/after photos as singles
-        for (let i = pairCount; i < befores.length; i++) {
-            items.push({
-                category: group.category,
-                title: group.title,
-                image: PHOTOS_API + '/image/' + befores[i].key
-            });
-        }
-        for (let i = pairCount; i < afters.length; i++) {
-            items.push({
-                category: group.category,
-                title: group.title,
-                image: PHOTOS_API + '/image/' + afters[i].key
+                befores: befores.map(p => PHOTOS_API + '/image/' + p.key),
+                afters: afters.map(p => PHOTOS_API + '/image/' + p.key)
             });
         }
 
