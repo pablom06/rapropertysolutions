@@ -175,7 +175,7 @@ nav {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 2rem;
+    padding: 120px 2rem 2rem;
     position: relative;
     overflow: hidden;
 }
@@ -1038,6 +1038,10 @@ footer {
 
     .nav-links a::after {
         display: none;
+    }
+
+    .hero {
+        padding: 80px 1.5rem 2rem;
     }
 
     .hero-content h1 {
