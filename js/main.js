@@ -173,6 +173,96 @@ window.addEventListener('scroll', () => {
 // Initial render
 renderGallery('all');
 
+// ===== Google reviews =====
+const REVIEWS_API = 'https://ra-photos.rapropertysolutions.net/reviews';
+
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
+function renderStars(rating) {
+    const r = Number(rating) || 0;
+    const full = Math.floor(r);
+    const half = r - full >= 0.5 ? 1 : 0;
+    const empty = 5 - full - half;
+    return (
+        '<i class="fas fa-star"></i>'.repeat(full) +
+        (half ? '<i class="fas fa-star-half-stroke"></i>' : '') +
+        '<i class="far fa-star"></i>'.repeat(empty)
+    );
+}
+
+async function loadReviews() {
+    const section = document.getElementById('reviews');
+    const summary = document.getElementById('reviews-summary');
+    const grid = document.getElementById('reviews-grid');
+    const cta = document.getElementById('leave-review-btn');
+    if (!section || !summary || !grid) return;
+
+    try {
+        const resp = await fetch(REVIEWS_API);
+        if (!resp.ok) throw new Error('reviews unavailable');
+        const data = await resp.json();
+
+        if (cta && data.writeReviewUrl) cta.href = data.writeReviewUrl;
+
+        const ratingText = (data.rating || 0).toFixed(1);
+        const total = data.total || 0;
+        summary.innerHTML = `
+            <div class="reviews-rating">${renderStars(data.rating)}</div>
+            <div class="reviews-rating-text">
+                <strong>${ratingText}</strong> out of 5 ·
+                ${total} Google review${total === 1 ? '' : 's'}
+            </div>
+        `;
+
+        const reviews = data.reviews || [];
+        if (reviews.length === 0) {
+            grid.innerHTML = '<p class="reviews-empty">Be the first to leave a review.</p>';
+            return;
+        }
+
+        grid.innerHTML = reviews.map(r => {
+            const initial = (r.author && r.author[0] ? r.author[0] : '?').toUpperCase();
+            const avatar = r.photo
+                ? `<img src="${escapeHtml(r.photo)}" alt="" class="review-photo" loading="lazy" referrerpolicy="no-referrer">`
+                : `<div class="review-photo placeholder">${escapeHtml(initial)}</div>`;
+            return `
+                <div class="review-card fade-in">
+                    <div class="review-header">
+                        ${avatar}
+                        <div>
+                            <div class="review-author">${escapeHtml(r.author)}</div>
+                            <div class="review-time">${escapeHtml(r.time)}</div>
+                        </div>
+                    </div>
+                    <div class="review-stars">${renderStars(r.rating)}</div>
+                    <p class="review-text">${escapeHtml(r.text)}</p>
+                </div>
+            `;
+        }).join('');
+
+        grid.querySelectorAll('img.review-photo').forEach(img => {
+            img.addEventListener('error', () => {
+                const card = img.closest('.review-card');
+                const author = card?.querySelector('.review-author')?.textContent || '?';
+                const ph = document.createElement('div');
+                ph.className = 'review-photo placeholder';
+                ph.textContent = (author[0] || '?').toUpperCase();
+                img.replaceWith(ph);
+            });
+        });
+
+        section.querySelectorAll('.review-card').forEach(el => scrollObserver.observe(el));
+    } catch (e) {
+        section.style.display = 'none';
+    }
+}
+
+loadReviews();
+
 // Show success message if redirected from contact form
 if (window.location.hash === '#contact-success') {
     const successMsg = document.getElementById('contact-success');

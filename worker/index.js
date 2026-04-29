@@ -2,7 +2,7 @@
 // Bindings needed: R2 bucket "PHOTOS", environment variable "UPLOAD_PASSWORD"
 
 export default {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const corsHeaders = {
             'Access-Control-Allow-Origin': '*',
@@ -232,6 +232,71 @@ export default {
             return new Response(JSON.stringify({ success: true }), {
                 headers: { 'Content-Type': 'application/json', ...corsHeaders }
             });
+        }
+
+        // Google reviews (no auth needed; cached at the edge)
+        if (url.pathname === '/reviews') {
+            const cache = caches.default;
+            const cacheKey = new Request('https://cache.local/reviews-v1');
+            const hit = await cache.match(cacheKey);
+            if (hit) return hit;
+
+            const placeId = env.GOOGLE_PLACE_ID;
+            const apiKey = env.GOOGLE_PLACES_API_KEY;
+            if (!placeId || !apiKey) {
+                return new Response(JSON.stringify({ error: 'Reviews not configured' }), {
+                    status: 503, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+
+            try {
+                const apiResp = await fetch(
+                    `https://places.googleapis.com/v1/places/${placeId}?languageCode=en`,
+                    {
+                        headers: {
+                            'X-Goog-Api-Key': apiKey,
+                            'X-Goog-FieldMask': 'rating,userRatingCount,reviews,googleMapsUri'
+                        }
+                    }
+                );
+
+                if (!apiResp.ok) {
+                    const detail = await apiResp.text();
+                    return new Response(JSON.stringify({ error: 'Places API error', detail }), {
+                        status: 502, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                    });
+                }
+
+                const data = await apiResp.json();
+                const out = {
+                    rating: data.rating || 0,
+                    total: data.userRatingCount || 0,
+                    mapsUrl: data.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${placeId}`,
+                    writeReviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`,
+                    reviews: (data.reviews || []).map(r => ({
+                        author: r.authorAttribution?.displayName || 'Anonymous',
+                        photo: r.authorAttribution?.photoUri || '',
+                        profileUrl: r.authorAttribution?.uri || '',
+                        rating: r.rating || 0,
+                        time: r.relativePublishTimeDescription || '',
+                        text: r.text?.text || ''
+                    }))
+                };
+
+                const response = new Response(JSON.stringify(out), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'public, max-age=21600',
+                        ...corsHeaders
+                    }
+                });
+                ctx.waitUntil(cache.put(cacheKey, response.clone()));
+                return response;
+            } catch (e) {
+                return new Response(JSON.stringify({ error: e.message }), {
+                    status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
         }
 
         return new Response('RA Photos API', { headers: corsHeaders });
