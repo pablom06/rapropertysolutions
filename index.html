@@ -7,7 +7,7 @@
     <meta name="description" content="Turns, make-readies, rehabs, and full maintenance services for SFR, multifamily, and apartment buildings. Serving Houston, San Antonio, Dallas, and Connecticut. Over 50 years combined experience.">
     <link rel="icon" href="images/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css?v=10">
+    <link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
     <header>
@@ -173,7 +173,7 @@
         <div class="gallery-placeholder" id="gallery-placeholder">
             <p>Project photos coming soon.</p>
         </div>
-        <div class="view-more-wrap" id="view-more-wrap" style="display:none">
+        <div class="view-more-wrap" id="view-more-wrap">
             <a href="gallery.html" class="view-more-btn">View All Projects</a>
         </div>
     </section>
@@ -215,7 +215,41 @@
         <div class="reviews-summary fade-in" id="reviews-summary"></div>
         <div class="reviews-grid stagger-children" id="reviews-grid"></div>
         <div class="reviews-cta fade-in">
-            <a href="#" id="leave-review-btn" class="btn" target="_blank" rel="noopener">Leave a Google Review</a>
+            <a href="#" id="leave-review-btn" class="btn" target="_blank" rel="noopener" style="display:none">Leave a Google Review</a>
+            <button type="button" class="btn" id="leave-testimonial-btn" onclick="openTestimonialForm()">Leave a Review</button>
+        </div>
+
+        <div class="testimonial-form-wrap fade-in" id="testimonial-form-wrap" style="display:none">
+            <form id="testimonial-form" class="testimonial-form" onsubmit="submitTestimonial(event)">
+                <h3>Share your experience</h3>
+                <label for="t-name">Your name</label>
+                <input type="text" id="t-name" name="author" required maxlength="80">
+
+                <label>Rating</label>
+                <div class="star-input" id="star-input" role="radiogroup" aria-label="Rating">
+                    <input type="hidden" name="rating" id="t-rating" value="0" required>
+                    <button type="button" class="star-btn" data-value="1" aria-label="1 star"><i class="far fa-star"></i></button>
+                    <button type="button" class="star-btn" data-value="2" aria-label="2 stars"><i class="far fa-star"></i></button>
+                    <button type="button" class="star-btn" data-value="3" aria-label="3 stars"><i class="far fa-star"></i></button>
+                    <button type="button" class="star-btn" data-value="4" aria-label="4 stars"><i class="far fa-star"></i></button>
+                    <button type="button" class="star-btn" data-value="5" aria-label="5 stars"><i class="far fa-star"></i></button>
+                </div>
+
+                <label for="t-text">Your review</label>
+                <textarea id="t-text" name="text" required maxlength="2000" rows="4"></textarea>
+
+                <label for="t-email">Email <span class="optional">(optional, kept private)</span></label>
+                <input type="email" id="t-email" name="email" maxlength="120">
+
+                <input type="text" name="website" tabindex="-1" autocomplete="off" class="hp-field" aria-hidden="true">
+
+                <div class="testimonial-form-actions">
+                    <button type="button" class="btn btn-ghost" onclick="closeTestimonialForm()">Cancel</button>
+                    <button type="submit" class="btn" id="t-submit">Submit Review</button>
+                </div>
+                <div class="testimonial-form-status" id="t-status"></div>
+                <p class="testimonial-form-note">Reviews are read by our team before they appear on the site.</p>
+            </form>
         </div>
     </section>
 
@@ -304,7 +338,7 @@
         </div>
     </footer>
 
-    <script src="js/gallery-data.js?v=10"></script>
-    <script src="js/main.js?v=10"></script>
+    <script src="js/gallery-data.js?v=11"></script>
+    <script src="js/main.js?v=11"></script>
 </body>
 </html>

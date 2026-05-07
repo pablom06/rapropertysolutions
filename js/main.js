@@ -66,7 +66,7 @@ function renderGallery(filter) {
     `).join('');
 
     if (viewMoreWrap) {
-        viewMoreWrap.style.display = (!isGalleryPage && items.length > MAX_HOME_CARDS) ? 'block' : 'none';
+        viewMoreWrap.style.display = isGalleryPage ? 'none' : 'block';
     }
 }
 
@@ -173,8 +173,8 @@ window.addEventListener('scroll', () => {
 // Initial render
 renderGallery('all');
 
-// ===== Google reviews =====
-const REVIEWS_API = 'https://ra-photos.rapropertysolutions.net/reviews';
+// ===== Reviews (Google + self-hosted testimonials) =====
+const REVIEWS_API_BASE = 'https://ra-photos.rapropertysolutions.net';
 
 function escapeHtml(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
@@ -194,74 +194,211 @@ function renderStars(rating) {
     );
 }
 
+function relativeTime(iso) {
+    if (!iso) return '';
+    const then = new Date(iso).getTime();
+    const diff = (Date.now() - then) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+    if (diff < 86400 * 7) return Math.floor(diff / 86400) + ' days ago';
+    if (diff < 86400 * 30) return Math.floor(diff / (86400 * 7)) + ' weeks ago';
+    if (diff < 86400 * 365) return Math.floor(diff / (86400 * 30)) + ' months ago';
+    return Math.floor(diff / (86400 * 365)) + ' years ago';
+}
+
+async function fetchGoogleReviews() {
+    try {
+        const resp = await fetch(REVIEWS_API_BASE + '/reviews');
+        if (!resp.ok) return null;
+        return await resp.json();
+    } catch (e) {
+        return null;
+    }
+}
+
+async function fetchTestimonials() {
+    try {
+        const resp = await fetch(REVIEWS_API_BASE + '/testimonials');
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        return data.testimonials || [];
+    } catch (e) {
+        return [];
+    }
+}
+
 async function loadReviews() {
     const section = document.getElementById('reviews');
     const summary = document.getElementById('reviews-summary');
     const grid = document.getElementById('reviews-grid');
-    const cta = document.getElementById('leave-review-btn');
+    const googleCta = document.getElementById('leave-review-btn');
     if (!section || !summary || !grid) return;
 
-    try {
-        const resp = await fetch(REVIEWS_API);
-        if (!resp.ok) throw new Error('reviews unavailable');
-        const data = await resp.json();
+    const [google, testimonials] = await Promise.all([fetchGoogleReviews(), fetchTestimonials()]);
 
-        if (cta && data.writeReviewUrl) cta.href = data.writeReviewUrl;
+    const merged = [];
 
-        const ratingText = (data.rating || 0).toFixed(1);
-        const total = data.total || 0;
-        summary.innerHTML = `
-            <div class="reviews-rating">${renderStars(data.rating)}</div>
-            <div class="reviews-rating-text">
-                <strong>${ratingText}</strong> out of 5 ·
-                ${total} Google review${total === 1 ? '' : 's'}
+    if (google && google.reviews) {
+        google.reviews.forEach(r => merged.push({
+            source: 'google',
+            author: r.author,
+            photo: r.photo,
+            rating: r.rating,
+            text: r.text,
+            timeLabel: r.time
+        }));
+    }
+
+    testimonials.forEach(t => merged.push({
+        source: 'site',
+        author: t.author,
+        photo: '',
+        rating: t.rating,
+        text: t.text,
+        timeLabel: relativeTime(t.submitted)
+    }));
+
+    if (google && googleCta && google.writeReviewUrl) {
+        googleCta.href = google.writeReviewUrl;
+        googleCta.style.display = '';
+    }
+
+    const haveAnything = merged.length > 0 || (google && google.total > 0);
+    if (!haveAnything) {
+        section.style.display = '';
+        summary.innerHTML = '';
+        grid.innerHTML = '<p class="reviews-empty">Be the first to leave a review.</p>';
+        return;
+    }
+
+    let combinedTotal = 0;
+    let combinedSum = 0;
+    if (google && google.total > 0 && google.rating) {
+        combinedTotal += google.total;
+        combinedSum += google.rating * google.total;
+    }
+    testimonials.forEach(t => {
+        combinedTotal += 1;
+        combinedSum += Number(t.rating) || 0;
+    });
+    const avg = combinedTotal > 0 ? combinedSum / combinedTotal : 0;
+
+    summary.innerHTML = `
+        <div class="reviews-rating">${renderStars(avg)}</div>
+        <div class="reviews-rating-text">
+            <strong>${avg.toFixed(1)}</strong> out of 5 ·
+            ${combinedTotal} review${combinedTotal === 1 ? '' : 's'}
+        </div>
+    `;
+
+    grid.innerHTML = merged.map(r => {
+        const initial = (r.author && r.author[0] ? r.author[0] : '?').toUpperCase();
+        const avatar = r.photo
+            ? `<img src="${escapeHtml(r.photo)}" alt="" class="review-photo" loading="lazy" referrerpolicy="no-referrer">`
+            : `<div class="review-photo placeholder">${escapeHtml(initial)}</div>`;
+        const sourceBadge = r.source === 'google'
+            ? '<span class="review-source google">Google</span>'
+            : '<span class="review-source">Verified customer</span>';
+        return `
+            <div class="review-card fade-in">
+                <div class="review-header">
+                    ${avatar}
+                    <div>
+                        <div class="review-author">${escapeHtml(r.author)}${sourceBadge}</div>
+                        <div class="review-time">${escapeHtml(r.timeLabel || '')}</div>
+                    </div>
+                </div>
+                <div class="review-stars">${renderStars(r.rating)}</div>
+                <p class="review-text">${escapeHtml(r.text)}</p>
             </div>
         `;
+    }).join('');
 
-        const reviews = data.reviews || [];
-        if (reviews.length === 0) {
-            grid.innerHTML = '<p class="reviews-empty">Be the first to leave a review.</p>';
-            return;
-        }
-
-        grid.innerHTML = reviews.map(r => {
-            const initial = (r.author && r.author[0] ? r.author[0] : '?').toUpperCase();
-            const avatar = r.photo
-                ? `<img src="${escapeHtml(r.photo)}" alt="" class="review-photo" loading="lazy" referrerpolicy="no-referrer">`
-                : `<div class="review-photo placeholder">${escapeHtml(initial)}</div>`;
-            return `
-                <div class="review-card fade-in">
-                    <div class="review-header">
-                        ${avatar}
-                        <div>
-                            <div class="review-author">${escapeHtml(r.author)}</div>
-                            <div class="review-time">${escapeHtml(r.time)}</div>
-                        </div>
-                    </div>
-                    <div class="review-stars">${renderStars(r.rating)}</div>
-                    <p class="review-text">${escapeHtml(r.text)}</p>
-                </div>
-            `;
-        }).join('');
-
-        grid.querySelectorAll('img.review-photo').forEach(img => {
-            img.addEventListener('error', () => {
-                const card = img.closest('.review-card');
-                const author = card?.querySelector('.review-author')?.textContent || '?';
-                const ph = document.createElement('div');
-                ph.className = 'review-photo placeholder';
-                ph.textContent = (author[0] || '?').toUpperCase();
-                img.replaceWith(ph);
-            });
+    grid.querySelectorAll('img.review-photo').forEach(img => {
+        img.addEventListener('error', () => {
+            const card = img.closest('.review-card');
+            const author = card?.querySelector('.review-author')?.textContent || '?';
+            const ph = document.createElement('div');
+            ph.className = 'review-photo placeholder';
+            ph.textContent = (author[0] || '?').toUpperCase();
+            img.replaceWith(ph);
         });
+    });
 
-        section.querySelectorAll('.review-card').forEach(el => scrollObserver.observe(el));
-    } catch (e) {
-        section.style.display = 'none';
-    }
+    section.querySelectorAll('.review-card').forEach(el => scrollObserver.observe(el));
 }
 
 loadReviews();
+
+// ===== Testimonial submission form =====
+function openTestimonialForm() {
+    const wrap = document.getElementById('testimonial-form-wrap');
+    if (!wrap) return;
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('t-name')?.focus();
+}
+
+function closeTestimonialForm() {
+    const wrap = document.getElementById('testimonial-form-wrap');
+    if (wrap) wrap.style.display = 'none';
+}
+
+document.querySelectorAll('.star-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const value = parseInt(btn.dataset.value, 10);
+        document.getElementById('t-rating').value = String(value);
+        document.querySelectorAll('.star-btn').forEach((b, i) => {
+            const active = i < value;
+            b.classList.toggle('active', active);
+            const icon = b.querySelector('i');
+            if (icon) icon.className = active ? 'fas fa-star' : 'far fa-star';
+        });
+    });
+});
+
+async function submitTestimonial(event) {
+    event.preventDefault();
+    const form = event.target;
+    const status = document.getElementById('t-status');
+    const submitBtn = document.getElementById('t-submit');
+    const rating = parseInt(document.getElementById('t-rating').value, 10) || 0;
+
+    if (rating < 1) {
+        status.className = 'testimonial-form-status error';
+        status.textContent = 'Please choose a star rating.';
+        return;
+    }
+
+    status.className = 'testimonial-form-status';
+    status.textContent = 'Sending...';
+    submitBtn.disabled = true;
+
+    try {
+        const resp = await fetch(REVIEWS_API_BASE + '/testimonial', {
+            method: 'POST',
+            body: new FormData(form)
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || 'Submission failed');
+
+        status.className = 'testimonial-form-status success';
+        status.textContent = 'Thank you! Your review will appear after our team reviews it.';
+        form.reset();
+        document.querySelectorAll('.star-btn').forEach(b => {
+            b.classList.remove('active');
+            const icon = b.querySelector('i');
+            if (icon) icon.className = 'far fa-star';
+        });
+        document.getElementById('t-rating').value = '0';
+    } catch (e) {
+        status.className = 'testimonial-form-status error';
+        status.textContent = e.message || 'Something went wrong. Please try again.';
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
 
 // Show success message if redirected from contact form
 if (window.location.hash === '#contact-success') {

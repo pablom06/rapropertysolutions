@@ -15,7 +15,7 @@ export default {
         }
 
         const auth = request.headers.get('Authorization');
-        const needsAuth = ['/upload', '/list', '/delete', '/update'];
+        const needsAuth = ['/upload', '/list', '/delete', '/update', '/testimonials-admin', '/messages'];
 
         if (needsAuth.some(p => url.pathname.startsWith(p))) {
             if (auth !== env.UPLOAD_PASSWORD) {
@@ -297,6 +297,142 @@ export default {
                     status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders }
                 });
             }
+        }
+
+        // Submit a testimonial (no auth, honeypot for spam)
+        if (url.pathname === '/testimonial' && request.method === 'POST') {
+            try {
+                const formData = await request.formData();
+                const honeypot = (formData.get('website') || '').toString();
+                if (honeypot.trim() !== '') {
+                    return new Response(JSON.stringify({ success: true }), {
+                        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                    });
+                }
+
+                const author = (formData.get('author') || '').toString().trim().slice(0, 80);
+                const text = (formData.get('text') || '').toString().trim().slice(0, 2000);
+                const rating = Math.max(1, Math.min(5, parseInt(formData.get('rating'), 10) || 0));
+                const email = (formData.get('email') || '').toString().trim().slice(0, 120);
+
+                if (!author || !text || !rating) {
+                    return new Response(JSON.stringify({ error: 'Name, rating, and review text are required.' }), {
+                        status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                    });
+                }
+
+                const submitted = new Date().toISOString();
+                const timestamp = Date.now();
+                const key = `testimonial/${timestamp}-${Math.random().toString(36).slice(2, 8)}.json`;
+
+                await env.PHOTOS.put(key, JSON.stringify({
+                    author, email, rating, text, submitted, approved: false
+                }), {
+                    httpMetadata: { contentType: 'application/json' }
+                });
+
+                if (env.RESEND_KEY) {
+                    ctx.waitUntil(fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${env.RESEND_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            from: 'RA Property Solutions <noreply@rapropertysolutions.net>',
+                            to: 'main@rapropertysolutions.net',
+                            subject: `New testimonial pending: ${rating}★ from ${author}`,
+                            html: `<h2>New testimonial awaiting approval</h2>
+                                <p><strong>Name:</strong> ${author}</p>
+                                <p><strong>Email:</strong> ${email || 'Not provided'}</p>
+                                <p><strong>Rating:</strong> ${rating} / 5</p>
+                                <p><strong>Review:</strong></p>
+                                <p>${text.replace(/</g, '&lt;')}</p>
+                                <hr>
+                                <p>Approve or delete it from the upload page.</p>`
+                        })
+                    }));
+                }
+
+                return new Response(JSON.stringify({ success: true }), {
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            } catch (e) {
+                return new Response(JSON.stringify({ error: e.message }), {
+                    status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+        }
+
+        // Public testimonials (approved only, no auth)
+        if (url.pathname === '/testimonials' && request.method === 'GET') {
+            const list = await env.PHOTOS.list({ prefix: 'testimonial/', limit: 200 });
+            const items = [];
+            for (const obj of list.objects) {
+                const data = await env.PHOTOS.get(obj.key);
+                if (!data) continue;
+                const json = await data.json();
+                if (!json.approved) continue;
+                items.push({
+                    author: json.author,
+                    rating: json.rating,
+                    text: json.text,
+                    submitted: json.submitted
+                });
+            }
+            items.sort((a, b) => new Date(b.submitted) - new Date(a.submitted));
+            return new Response(JSON.stringify({ testimonials: items }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // Admin: list all testimonials including pending (auth)
+        if (url.pathname === '/testimonials-admin' && request.method === 'GET') {
+            const list = await env.PHOTOS.list({ prefix: 'testimonial/', limit: 200 });
+            const items = [];
+            for (const obj of list.objects) {
+                const data = await env.PHOTOS.get(obj.key);
+                if (!data) continue;
+                const json = await data.json();
+                items.push({ key: obj.key, ...json });
+            }
+            items.sort((a, b) => new Date(b.submitted) - new Date(a.submitted));
+            return new Response(JSON.stringify({ testimonials: items }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+        }
+
+        // Admin: approve / unapprove a testimonial (auth)
+        if (url.pathname.startsWith('/testimonials-admin/') && request.method === 'PUT') {
+            try {
+                const key = url.pathname.replace('/testimonials-admin/', '');
+                const body = await request.json();
+                const data = await env.PHOTOS.get(key);
+                if (!data) {
+                    return new Response('Not found', { status: 404, headers: corsHeaders });
+                }
+                const json = await data.json();
+                const updated = { ...json, approved: !!body.approved };
+                await env.PHOTOS.put(key, JSON.stringify(updated), {
+                    httpMetadata: { contentType: 'application/json' }
+                });
+                return new Response(JSON.stringify({ success: true }), {
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            } catch (e) {
+                return new Response(JSON.stringify({ error: e.message }), {
+                    status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders }
+                });
+            }
+        }
+
+        // Admin: delete a testimonial (auth)
+        if (url.pathname.startsWith('/testimonials-admin/') && request.method === 'DELETE') {
+            const key = url.pathname.replace('/testimonials-admin/', '');
+            await env.PHOTOS.delete(key);
+            return new Response(JSON.stringify({ success: true }), {
+                headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
         }
 
         return new Response('RA Photos API', { headers: corsHeaders });
