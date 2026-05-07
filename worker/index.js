@@ -347,9 +347,11 @@ export default {
                                 <p><strong>Email:</strong> ${email || 'Not provided'}</p>
                                 <p><strong>Rating:</strong> ${rating} / 5</p>
                                 <p><strong>Review:</strong></p>
-                                <p>${text.replace(/</g, '&lt;')}</p>
-                                <hr>
-                                <p>Approve or delete it from the upload page.</p>`
+                                <blockquote style="border-left:3px solid #1a3a5c;padding:0.5rem 1rem;margin:0.5rem 0;color:#444;background:#f7f7f7">${text.replace(/</g, '&lt;')}</blockquote>
+                                <p style="margin-top:1.5rem">
+                                    <a href="https://rapropertysolutions.net/upload.html#testimonials" style="display:inline-block;background:#e8a838;color:#222;padding:0.7rem 1.4rem;border-radius:4px;text-decoration:none;font-weight:600">Review &amp; Approve</a>
+                                </p>
+                                <p style="color:#666;font-size:13px">You'll need to log in with your upload password.</p>`
                         })
                     }));
                 }
