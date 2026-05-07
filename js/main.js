@@ -400,6 +400,12 @@ async function submitTestimonial(event) {
     }
 }
 
+// Auto-open the testimonial form if linked with #leave-review
+if (window.location.hash === '#leave-review' || window.location.hash === '#review') {
+    history.replaceState(null, '', window.location.pathname + '#reviews');
+    setTimeout(openTestimonialForm, 100);
+}
+
 // Show success message if redirected from contact form
 if (window.location.hash === '#contact-success') {
     const successMsg = document.getElementById('contact-success');
